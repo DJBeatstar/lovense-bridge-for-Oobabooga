@@ -1,0 +1,2 @@
+Hyphy:
+{"code":200,"data":{"toys":"{\"ce25a1c39012\":{\"nickName\":\"\",\"name\":\"hyphy\",\"id\":\"ce25a1c39012\",\"battery\":100,\"version\":\"\",\"status\":\"1\"}}","appType":"remote","gameAppId":"2d606d11c1b244629d2727c5b65aa0a4","platform":"android"},"type":"OK"}
