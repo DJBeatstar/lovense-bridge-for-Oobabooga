@@ -6,11 +6,12 @@
 #include <SliderConstants.au3>
 #include <GuiSlider.au3>
 #include <EditConstants.au3>
+#include <ProgressConstants.au3>
 
-$wMain = GUICreate("oobabooga Toy Control",349,348,-1,-1,-1,-1)
+$wMain = GUICreate("oobabooga Toy Control",374,426,-1,-1,-1,-1)
 GUICtrlCreateLabel("IP Adress",32,35,50,15,-1,-1)
 GUICtrlSetBkColor(-1,"-2")
-$sIP = GUICtrlCreateInput("192.168.178.104",160,30,150,20,-1,$WS_EX_CLIENTEDGE)
+$sIP = GUICtrlCreateInput("127.0.0.1",160,30,150,20,-1,$WS_EX_CLIENTEDGE)
 GUICtrlCreateLabel("Port",32,62,50,15,-1,-1)
 GUICtrlSetBkColor(-1,"-2")
 $iPort = GUICtrlCreateInput("20010",160,57,150,20,-1,$WS_EX_CLIENTEDGE)
@@ -27,8 +28,15 @@ $sLabelActuatorB = GUICtrlCreateLabel("Vibration Intensity",32,230,128,15,-1,-1)
 GUICtrlSetBkColor(-1,"-2")
 $iIntensityB = GUICtrlCreateSlider(32,245,278,30,-1,-1)
 _GUICtrlSlider_SetRange ( $iIntensityB, 0, 20 )
-$bActive = GUICtrlCreateCheckbox("Activate",32,300,150,20,-1,-1)
+$bActive = GUICtrlCreateCheckbox("Activate AI Toycontrol",32,300,150,20,-1,-1)
 GUICtrlSetTip(-1,"Activates AI Toycontrol")
+$swAI_Data_Path = GUICtrlCreateInput("",32,340,310,20,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_DISABLE))
+$bBrowse = GUICtrlCreateButton("Browse",32,378,310,30,-1,-1)
+$iwBattery = GUICtrlCreateProgress(326,80,16,195,$PBS_VERTICAL,-1)
+GUICtrlCreateIcon(@scriptdir&"\"&"Images\352052_battery_charging_full_icon.ico",-1,310,29,48,48,-1,-1)
+GUICtrlCreateLabel("AI Data Filepath",32,325,82,15,-1,-1)
+GUICtrlSetBkColor(-1,"-2")
 
 
 
@@ -37,8 +45,8 @@ GUICtrlSetTip(-1,"Activates AI Toycontrol")
 Handle_deklaration=default
 Handle_deklaration_const=false
 title=oobabooga Toy Control
-breite=349
-hoehe=348
+breite=374
+hoehe=426
 style=-1
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -72,7 +80,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x000820AE]
+[0x00100B78]
 type=checkbox
 handle=445
 locked=0
@@ -90,7 +98,7 @@ tooltip=Activates AI Toycontrol
 bgimage=
 textcolour=0x000000
 id=$bActive
-text=Activate
+text=Activate AI Toycontrol
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -101,7 +109,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000220B0]
+[0x0026095E]
 type=label
 handle=446
 locked=0
@@ -130,7 +138,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120B2]
+[0x00102104]
 type=label
 handle=447
 locked=0
@@ -159,7 +167,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120B4]
+[0x000F21A6]
 type=input
 handle=448
 locked=0
@@ -188,7 +196,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120B6]
+[0x001121C0]
 type=button
 handle=449
 locked=0
@@ -217,7 +225,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120B8]
+[0x001021DC]
 type=slider
 handle=450
 locked=0
@@ -246,7 +254,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120BA]
+[0x00112128]
 type=label
 handle=451
 locked=0
@@ -275,7 +283,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120BC]
+[0x000821BA]
 type=label
 handle=452
 locked=0
@@ -304,7 +312,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120BE]
+[0x000A21CA]
 type=input
 handle=453
 locked=0
@@ -333,7 +341,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120C0]
+[0x000F21D8]
 type=label
 handle=454
 locked=0
@@ -362,7 +370,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120C2]
+[0x000A21CE]
 type=slider
 handle=455
 locked=0
@@ -391,7 +399,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000120C4]
+[0x00112126]
 type=input
 handle=456
 locked=0
@@ -409,13 +417,158 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=$sIP
-text=192.168.178.104
+text=127.0.0.1
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
 order=1
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x001021E4]
+type=progress
+handle=457
+locked=0
+resize=
+x=326
+y=80
+width=16
+height=195
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$iwBattery
+text=0
+state=$GUI_SHOW+$GUI_ENABLE
+style=$PBS_VERTICAL
+exstyle=
+bgcolour=
+code=
+order=14
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000A2232]
+type=icon
+handle=458
+locked=0
+resize=
+x=310
+y=29
+width=48
+height=48
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=Images\352052_battery_charging_full_icon.ico
+textcolour=0x000000
+id=
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=15
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00212198]
+type=label
+handle=459
+locked=0
+resize=
+x=32
+y=325
+width=82
+height=15
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=AI Data Filepath
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=16
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00262124]
+type=input
+handle=460
+locked=0
+resize=
+x=32
+y=340
+width=310
+height=20
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$swAI_Data_Path
+text=
+state=$GUI_SHOW+$GUI_DISABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+order=12
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00112312]
+type=button
+handle=469
+locked=0
+resize=
+x=32
+y=378
+width=310
+height=30
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$bBrowse
+text=Browse
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=13
 tabpage=-1
 iconindex=
 iconlarge=0

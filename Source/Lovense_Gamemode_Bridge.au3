@@ -14,16 +14,26 @@ If not @Compiled then DllCall("User32.dll", "bool", "SetProcessDPIAware")
 Global $sToyNameGlobal = "" ; Toy Name
 Global $sFunction1 = "" ; Toy Function 1
 Global $sFunction2 = "" ; Toy Function 2
+Global $iBattery = 0
 Global $iIntensityAGlobal = 0 ; Intensitysetting 1
 Global $iIntensityBGlobal = 0 ; Intensitysetting 2
 Global $iActCount =  0 ; Count of Actuators on the Toy
 Global $sIpGlobal =  "127.0.0.1" ; IP of the Lovense Gamemode Device
 Global $iPortGlobal = "20010" ; Port of the Lovense Gamemode Device
+Global $sAI_Data_Path = ""
 
 ; Global Constants
 Global Const $HTTP_STATUS_OK = 200
 
 ; UI Initialisation
+if FileExists("config.ini") Then 
+	$sIpGlobal = IniRead ( "config.ini", "connection", "ip", "127.0.0.1" )
+	$iPortGlobal = IniRead ( "config.ini", "connection", "port", "20010" )
+	$sAI_Data_Path = IniRead ( "config.ini", "datapath", "path", "" )
+	GUICtrlSetData($sIP, $sIpGlobal )
+	GUICtrlSetData($iPort, $iPortGlobal )
+	GUICtrlSetData($swAI_Data_Path, $sAI_Data_Path)
+EndIf
 _ActuatorA_Show(False) ; Hide Slider 1
 _ActuatorB_Show (False) ; Hide Slider 2
 GUISetState(@SW_SHOW, $wMain) ; Show UI
@@ -34,6 +44,9 @@ While 1
 	$nMsg = GUIGetMsg()
 	Switch $nMsg
 		Case $GUI_EVENT_CLOSE ; Exit Program
+			IniWrite ( "config.ini", "connection", "ip", GUICtrlRead($sIP) )
+			IniWrite ( "config.ini", "connection", "port", GUICtrlRead($iPort) )
+			IniWrite ( "config.ini", "datapath", "path", $sAI_Data_Path )
 			Exit
 			
 		Case $botton_scan ; Scan for Toys
@@ -41,9 +54,24 @@ While 1
 			$iPortGlobal =  GUICtrlRead($iPort)
 			$jsonToys = _gettoys ($sIpGlobal, $iPortGlobal)
 			_config_window (_json_parse($jsonToys))
-				
+			
+		Case $bBrowse ; Set the path to the AI Outputfile
+			$sPath = FileOpenDialog ( "File with outputdata from the AI", @ScriptDir, "Text files (*.txt)", 2, "data.txt" )
+			GUICtrlSetData($swAI_Data_Path, $sPath)
+			$sAI_Data_Path =  $sPath
 
 	EndSwitch
+	
+	; If AI Controll is active, reading the outputfile and sending the data to the parser to serch for instruction
+	If $sToyNameGlobal <> "" Then 
+		If GUICtrlRead($bActive) =  1 Then
+			if FileExists($sAI_Data_Path) Then 
+				$sAIOutput = FileReadLine($sAI_Data_Path)
+				FileDelete($sAI_Data_Path)
+				_keywordfinder($sAIOutput)
+			EndIf
+		EndIf		
+	EndIf
 	
 	; Check for found Toys
 	if GUICtrlRead($eToyFound) <> "" Then 
@@ -82,6 +110,10 @@ EndFunc
 ; Toy controll
 Func _toy_actuate ($sIpFunc, $iPortFunc, $sToyName, $iActuator1, $iActuator2 = 0) 
 	
+	$jsonToys = _gettoys ($sIpGlobal, $iPortGlobal)
+	$aBattery = _json_parse($jsonToys)
+	GUICtrlSetData($iwBattery, $aBattery[2])
+	ConsoleWrite($aBattery[2] & @CRLF)
 	if $sToyname = "hush" Then 
 		$sPost = HttpPost('http://' & $sIpFunc & ':' & $iPortFunc & '/command', '{"command":"Function","action":"Vibrate:' & $iActuator1 & '","timeSec":0,"stopPrevious":0,"apiVer":1}')
 	Else
@@ -121,6 +153,8 @@ EndFunc
 ; Configuring mainwindow acording to the needs of the Toy.
 Func _config_window ($aToyData)
 	
+	GUICtrlSetData($iwBattery, $aToyData[2])
+	ConsoleWrite($aToyData[2] & @CRLF)
 	; Hush
 	if $aToyData[1] = "hush" Then 
 		$sToyNameGlobal = "hush"
@@ -213,5 +247,16 @@ Func HttpGet($sURL, $sData = ""); HTTP Get Request
 	If (@error) Then Return SetError(2, 0, 0)
 	If ($oHTTP.Status <> $HTTP_STATUS_OK) Then Return SetError(3, 0, 0)
 	Return SetError(0, 0, $oHTTP.ResponseText)
+	
+EndFunc
+
+; Serching for Vibrationrequests
+Func _keywordfinder($string)
+	
+	For $i = 0 To 20 Step 1
+		if StringInStr($string, "vibe " & $i) Then 
+			GUICtrlSetData($iIntensityA, $i)
+		EndIf
+	Next
 	
 EndFunc
